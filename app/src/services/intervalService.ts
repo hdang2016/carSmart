@@ -20,6 +20,8 @@ const INTERVALS_COLLECTION = 'maintenanceIntervals';
  */
 export const DEFAULT_INTERVALS: Record<MaintenanceType, { mileageInterval: number; monthsInterval: number }> = {
   oil_change: { mileageInterval: 5000, monthsInterval: 6 },
+  transmission_fluid: { mileageInterval: 40000, monthsInterval: 36 },
+  timing_belt: { mileageInterval: 90000, monthsInterval: 84 },
   air_filter_change: { mileageInterval: 15000, monthsInterval: 12 },
   cabin_air_filter_change: { mileageInterval: 15000, monthsInterval: 12 },
   tire_rotation: { mileageInterval: 7500, monthsInterval: 6 },
@@ -36,6 +38,8 @@ export const DEFAULT_INTERVALS: Record<MaintenanceType, { mileageInterval: numbe
 export function getMaintenanceTypeName(type: MaintenanceType): string {
   const names: Record<MaintenanceType, string> = {
     oil_change: 'Oil Change',
+    transmission_fluid: 'Transmission Fluid',
+    timing_belt: 'Timing Belt',
     air_filter_change: 'Air Filter Change',
     cabin_air_filter_change: 'Cabin Air Filter',
     tire_rotation: 'Tire Rotation',

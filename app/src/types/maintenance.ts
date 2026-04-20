@@ -1,5 +1,7 @@
 export const MAINTENANCE_TYPES = [
   'oil_change',
+  'transmission_fluid',
+  'timing_belt',
   'air_filter_change',
   'cabin_air_filter_change',
   'tire_rotation',
