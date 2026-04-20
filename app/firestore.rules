@@ -1,0 +1,226 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && userId is string && request.auth.uid == userId;
+    }
+
+    function ownsVehicle(vehicleId) {
+      return isSignedIn()
+        && vehicleId is string
+        && exists(/databases/$(database)/documents/vehicles/$(vehicleId))
+        && get(/databases/$(database)/documents/vehicles/$(vehicleId)).data.userId == request.auth.uid;
+    }
+
+    function hasOnlyKeys(allowedKeys) {
+      return request.resource.data.keys().hasOnly(allowedKeys);
+    }
+
+    function hasRequiredKeys(requiredKeys) {
+      return request.resource.data.keys().hasAll(requiredKeys);
+    }
+
+    match /users/{userId} {
+      allow read, create, update, delete: if isOwner(userId);
+    }
+
+    match /vehicles/{vehicleId} {
+      allow read, delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && hasRequiredKeys(['userId', 'name', 'isActive', 'createdAt', 'updatedAt'])
+        && hasOnlyKeys([
+          'userId',
+          'name',
+          'make',
+          'model',
+          'year',
+          'vin',
+          'plate',
+          'oilType',
+          'tireSize',
+          'currentMileage',
+          'mileageUpdatedAt',
+          'isActive',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.isActive is bool
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && (!('make' in request.resource.data) || request.resource.data.make is string)
+        && (!('model' in request.resource.data) || request.resource.data.model is string)
+        && (!('year' in request.resource.data) || request.resource.data.year is int)
+        && (!('vin' in request.resource.data) || request.resource.data.vin is string)
+        && (!('plate' in request.resource.data) || request.resource.data.plate is string)
+        && (!('oilType' in request.resource.data) || request.resource.data.oilType is string)
+        && (!('tireSize' in request.resource.data) || request.resource.data.tireSize is string)
+        && (!('currentMileage' in request.resource.data) || request.resource.data.currentMileage is number)
+        && (!('mileageUpdatedAt' in request.resource.data) || request.resource.data.mileageUpdatedAt is timestamp);
+
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys([
+          'userId',
+          'name',
+          'make',
+          'model',
+          'year',
+          'vin',
+          'plate',
+          'oilType',
+          'tireSize',
+          'currentMileage',
+          'mileageUpdatedAt',
+          'isActive',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.isActive is bool
+        && (!('make' in request.resource.data) || request.resource.data.make is string)
+        && (!('model' in request.resource.data) || request.resource.data.model is string)
+        && (!('year' in request.resource.data) || request.resource.data.year is int)
+        && (!('vin' in request.resource.data) || request.resource.data.vin is string)
+        && (!('plate' in request.resource.data) || request.resource.data.plate is string)
+        && (!('oilType' in request.resource.data) || request.resource.data.oilType is string)
+        && (!('tireSize' in request.resource.data) || request.resource.data.tireSize is string)
+        && (!('currentMileage' in request.resource.data) || request.resource.data.currentMileage is number)
+        && (!('mileageUpdatedAt' in request.resource.data) || request.resource.data.mileageUpdatedAt is timestamp);
+    }
+
+    match /maintenance/{maintenanceId} {
+      allow read, delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && ownsVehicle(request.resource.data.vehicleId)
+        && hasRequiredKeys(['userId', 'vehicleId', 'type', 'date', 'createdAt'])
+        && hasOnlyKeys(['userId', 'vehicleId', 'type', 'date', 'mileage', 'notes', 'cost', 'createdAt'])
+        && request.resource.data.type is string
+        && request.resource.data.date is timestamp
+        && request.resource.data.createdAt is timestamp
+        && (!('mileage' in request.resource.data) || request.resource.data.mileage is number)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
+        && (!('cost' in request.resource.data) || request.resource.data.cost is number);
+
+      allow update: if isOwner(resource.data.userId)
+        && ownsVehicle(resource.data.vehicleId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && hasOnlyKeys(['userId', 'vehicleId', 'type', 'date', 'mileage', 'notes', 'cost', 'createdAt'])
+        && request.resource.data.type is string
+        && request.resource.data.date is timestamp
+        && (!('mileage' in request.resource.data) || request.resource.data.mileage is number)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
+        && (!('cost' in request.resource.data) || request.resource.data.cost is number);
+    }
+
+    match /reminders/{reminderId} {
+      allow read, delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && ownsVehicle(request.resource.data.vehicleId)
+        && hasRequiredKeys([
+          'userId',
+          'vehicleId',
+          'type',
+          'message',
+          'isCompleted',
+          'notificationSent',
+          'createdAt',
+          'updatedAt'
+        ])
+        && hasOnlyKeys([
+          'userId',
+          'vehicleId',
+          'type',
+          'dueDate',
+          'dueMileage',
+          'message',
+          'isCompleted',
+          'notificationSent',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type is string
+        && request.resource.data.message is string
+        && request.resource.data.isCompleted is bool
+        && request.resource.data.notificationSent is bool
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && (!('dueDate' in request.resource.data) || request.resource.data.dueDate is timestamp)
+        && (!('dueMileage' in request.resource.data) || request.resource.data.dueMileage is number);
+
+      allow update: if isOwner(resource.data.userId)
+        && ownsVehicle(resource.data.vehicleId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys([
+          'userId',
+          'vehicleId',
+          'type',
+          'dueDate',
+          'dueMileage',
+          'message',
+          'isCompleted',
+          'notificationSent',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type is string
+        && request.resource.data.message is string
+        && request.resource.data.isCompleted is bool
+        && request.resource.data.notificationSent is bool
+        && (!('dueDate' in request.resource.data) || request.resource.data.dueDate is timestamp)
+        && (!('dueMileage' in request.resource.data) || request.resource.data.dueMileage is number);
+    }
+
+    match /maintenanceIntervals/{intervalId} {
+      allow read, delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && hasRequiredKeys(['userId', 'type', 'mileageInterval', 'monthsInterval', 'updatedAt'])
+        && hasOnlyKeys([
+          'userId',
+          'type',
+          'mileageInterval',
+          'monthsInterval',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type is string
+        && request.resource.data.mileageInterval is number
+        && request.resource.data.monthsInterval is number
+        && request.resource.data.updatedAt is timestamp
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt is timestamp);
+
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && hasOnlyKeys([
+          'userId',
+          'type',
+          'mileageInterval',
+          'monthsInterval',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type is string
+        && request.resource.data.mileageInterval is number
+        && request.resource.data.monthsInterval is number
+        && request.resource.data.updatedAt is timestamp
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt is timestamp);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

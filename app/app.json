@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Car Smart",
+    "slug": "carsmart",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/android-icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/android-splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.carsmart.app7b554",
+      "icon": "./assets/ios-icon.png",
+      "splash": {
+        "image": "./assets/ios-splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/android-icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.carsmart.app7b554"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5d487116-d3bb-42b0-86c8-e60f04a87ff4"
+      }
+    }
+  }
+}
