@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { MAINTENANCE_TYPES } from '../types/maintenance';
+import { REMINDER_TYPES } from '../types/reminder';
 
 const nonEmptyString = z.string().trim().min(1);
 const dateSchema = z.coerce.date();
@@ -37,7 +38,7 @@ export const maintenanceSchema = z.object({
 export const reminderSchema = z.object({
   userId: nonEmptyString,
   vehicleId: nonEmptyString,
-  type: z.enum(MAINTENANCE_TYPES),
+  type: z.enum(REMINDER_TYPES),
   dueDate: dateSchema.optional(),
   dueMileage: nonNegativeNumber.optional(),
   isCompleted: z.boolean().default(false),
@@ -45,9 +46,25 @@ export const reminderSchema = z.object({
   message: nonEmptyString,
   createdAt: dateSchema,
   updatedAt: dateSchema,
-}).refine((value) => Boolean(value.dueDate || value.dueMileage), {
-  message: 'At least one of dueDate or dueMileage is required',
-  path: ['dueDate'],
+}).superRefine((value, ctx) => {
+  if (value.type === 'registration_renewal') {
+    if (!value.dueDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Due date is required for registration renewal reminders',
+        path: ['dueDate'],
+      });
+    }
+    return;
+  }
+
+  if (!value.dueDate && !value.dueMileage) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'At least one of dueDate or dueMileage is required',
+      path: ['dueDate'],
+    });
+  }
 });
 
 export type VehicleInput = z.infer<typeof vehicleSchema>;

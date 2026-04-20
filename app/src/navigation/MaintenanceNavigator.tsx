@@ -6,10 +6,16 @@ import { EditMaintenanceScreen } from '../screens/maintenance/EditMaintenanceScr
 import { MaintenanceDetailScreen } from '../screens/maintenance/MaintenanceDetailScreen';
 import { MaintenanceListScreen } from '../screens/maintenance/MaintenanceListScreen';
 import { MaintenanceSettingsScreen } from '../screens/maintenance/MaintenanceSettingsScreen';
+import { AddReminderScreen } from '../screens/reminders/AddReminderScreen';
 
 export type MaintenanceStackParamList = {
   MaintenanceList: undefined;
   AddMaintenance: undefined;
+  AddReminder:
+    | {
+        vehicleId?: string;
+      }
+    | undefined;
   MaintenanceDetail: {
     maintenanceId: string;
   };
@@ -37,6 +43,11 @@ export function MaintenanceNavigator() {
         name="AddMaintenance"
         component={AddMaintenanceScreen}
         options={{ title: 'Log Maintenance' }}
+      />
+      <Stack.Screen
+        name="AddReminder"
+        component={AddReminderScreen}
+        options={{ title: 'Add Reminder' }}
       />
       <Stack.Screen
         name="MaintenanceDetail"

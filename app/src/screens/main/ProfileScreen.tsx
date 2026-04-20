@@ -1,4 +1,5 @@
-import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import Constants from 'expo-constants';
 
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,6 +9,16 @@ import type { ThemeMode } from '../../theme/theme';
 export function ProfileScreen() {
   const { signOut } = useAuth();
   const { mode, setMode, colors } = useAppTheme();
+
+  const configBuildNumber =
+    Platform.OS === 'ios'
+      ? Constants.expoConfig?.ios?.buildNumber
+      : Platform.OS === 'android'
+        ? String(Constants.expoConfig?.android?.versionCode ?? '')
+        : undefined;
+
+  const appVersion = Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'Unknown';
+  const buildNumber = Constants.nativeBuildVersion ?? configBuildNumber ?? 'Unknown';
 
   const options: ThemeMode[] = ['light', 'system', 'dark'];
 
@@ -44,6 +55,18 @@ export function ProfileScreen() {
         </View>
       </View>
 
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Software Build</Text>
+        <View style={styles.infoRow}>
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Version</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>{appVersion}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Build</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>{buildNumber}</Text>
+        </View>
+      </View>
+
       <Button title="Sign Out" onPress={() => void signOut()} />
     </ScreenContainer>
   );
@@ -75,5 +98,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  infoLabel: {
+    fontSize: 14,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

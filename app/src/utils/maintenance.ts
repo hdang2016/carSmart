@@ -1,6 +1,4 @@
-import type { MaintenanceType } from '../types/maintenance';
-
-export function formatMaintenanceType(type: MaintenanceType): string {
+export function formatMaintenanceType(type: string): string {
   return type
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

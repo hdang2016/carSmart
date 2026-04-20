@@ -1,4 +1,5 @@
 import type { MaintenanceType } from './maintenance';
+import type { ReminderType } from './reminder';
 
 export interface Vehicle {
   id?: string;
@@ -34,7 +35,7 @@ export interface Reminder {
   id?: string;
   userId: string;
   vehicleId: string;
-  type: MaintenanceType;
+  type: ReminderType;
   dueDate?: Date;
   dueMileage?: number;
   isCompleted: boolean;

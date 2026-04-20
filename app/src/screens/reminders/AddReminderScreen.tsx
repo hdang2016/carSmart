@@ -16,7 +16,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '../../components/Button';
 import { ScreenContainer } from '../../components/ScreenContainer';
@@ -24,14 +24,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAppTheme } from '../../contexts/ThemeContext';
 import { createReminder } from '../../services/reminderService';
 import { listVehiclesByUser } from '../../services/vehicleService';
-import { MAINTENANCE_TYPES, type MaintenanceType } from '../../types/maintenance';
+import { REMINDER_TYPES, isDateOnlyReminderType, type ReminderType } from '../../types/reminder';
 import { formatMaintenanceType } from '../../utils/maintenance';
 
 type Props = NativeStackScreenProps<any, 'AddReminder'>;
 
 const addReminderSchema = z.object({
   vehicleId: z.string().trim().min(1, 'Select a vehicle'),
-  type: z.enum(MAINTENANCE_TYPES),
+  type: z.enum(REMINDER_TYPES),
   dueDate: z
     .string()
     .trim()
@@ -46,9 +46,25 @@ const addReminderSchema = z.object({
     .optional()
     .refine((value) => !value || !Number.isNaN(Number(value)), 'Mileage must be a number'),
   message: z.string().trim().min(1, 'Message is required'),
-}).refine((data) => data.dueDate || data.dueMileage, {
-  message: 'Either due date or due mileage is required',
-  path: ['dueDate'],
+}).superRefine((data, ctx) => {
+  if (isDateOnlyReminderType(data.type)) {
+    if (!data.dueDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Due date is required for registration renewal',
+        path: ['dueDate'],
+      });
+    }
+    return;
+  }
+
+  if (!data.dueDate && !data.dueMileage) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Either due date or due mileage is required',
+      path: ['dueDate'],
+    });
+  }
 });
 
 type AddReminderValues = z.infer<typeof addReminderSchema>;
@@ -82,7 +98,19 @@ export function AddReminderScreen({ navigation, route }: Props) {
 
   const selectedType = watch('type');
   const selectedVehicleId = watch('vehicleId');
-  const selectedDate = watch('dueDate');
+  const messageValue = watch('message');
+  const isDateOnlyType = isDateOnlyReminderType(selectedType);
+
+  useEffect(() => {
+    if (!isDateOnlyType) {
+      return;
+    }
+
+    setValue('dueMileage', '', { shouldValidate: true });
+    if (!messageValue) {
+      setValue('message', 'Registration renewal due', { shouldValidate: true });
+    }
+  }, [isDateOnlyType, messageValue, setValue]);
 
   const vehiclesQuery = useQuery({
     queryKey: ['vehicles', userId],
@@ -248,7 +276,7 @@ export function AddReminderScreen({ navigation, route }: Props) {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.textMuted }]}>SERVICE TYPE</Text>
           <FlatList
-            data={MAINTENANCE_TYPES as readonly MaintenanceType[]}
+            data={REMINDER_TYPES as readonly ReminderType[]}
             horizontal
             keyExtractor={(item) => item}
             contentContainerStyle={styles.chipList}
@@ -317,7 +345,11 @@ export function AddReminderScreen({ navigation, route }: Props) {
                       ]}
                     >
                       <Text style={[styles.dateText, { color: value ? colors.text : colors.textMuted }]}>
-                        {value ? formatDisplayDate(value) : 'Due date (optional)'}
+                        {value
+                          ? formatDisplayDate(value)
+                          : isDateOnlyType
+                            ? 'Due date (required)'
+                            : 'Due date (optional)'}
                       </Text>
                     </View>
                   </Pressable>
@@ -438,37 +470,41 @@ export function AddReminderScreen({ navigation, route }: Props) {
               </Text>
             ) : null}
 
-            <Controller
-              control={control}
-              name="dueMileage"
-              render={({ field: { onChange, value } }) => (
-                <View style={styles.inputWrapper}>
-                  <Text style={[styles.inputIcon, { color: colors.textMuted }]}>📍</Text>
-                  <TextInput
-                    placeholder="Due mileage (optional)"
-                    placeholderTextColor={colors.textMuted}
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: errors.dueMileage ? colors.danger : colors.border,
-                        color: colors.text,
-                      },
-                    ]}
-                    value={value}
-                    keyboardType="number-pad"
-                    onChangeText={onChange}
-                    returnKeyType="done"
-                    blurOnSubmit
-                    onSubmitEditing={Keyboard.dismiss}
-                  />
-                </View>
-              )}
-            />
-            {errors.dueMileage ? (
-              <Text style={[styles.errorMessage, { color: colors.danger }]}>
-                {errors.dueMileage.message}
-              </Text>
+            {!isDateOnlyType ? (
+              <>
+                <Controller
+                  control={control}
+                  name="dueMileage"
+                  render={({ field: { onChange, value } }) => (
+                    <View style={styles.inputWrapper}>
+                      <Text style={[styles.inputIcon, { color: colors.textMuted }]}>📍</Text>
+                      <TextInput
+                        placeholder="Due mileage (optional)"
+                        placeholderTextColor={colors.textMuted}
+                        style={[
+                          styles.input,
+                          {
+                            backgroundColor: colors.surface,
+                            borderColor: errors.dueMileage ? colors.danger : colors.border,
+                            color: colors.text,
+                          },
+                        ]}
+                        value={value}
+                        keyboardType="number-pad"
+                        onChangeText={onChange}
+                        returnKeyType="done"
+                        blurOnSubmit
+                        onSubmitEditing={Keyboard.dismiss}
+                      />
+                    </View>
+                  )}
+                />
+                {errors.dueMileage ? (
+                  <Text style={[styles.errorMessage, { color: colors.danger }]}>
+                    {errors.dueMileage.message}
+                  </Text>
+                ) : null}
+              </>
             ) : null}
 
             <Controller

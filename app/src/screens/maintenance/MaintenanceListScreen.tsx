@@ -170,6 +170,11 @@ export function MaintenanceListScreen({ navigation }: Props) {
           title="Log Maintenance"
           onPress={() => navigation.navigate('AddMaintenance')}
         />
+        <Button
+          title="Add Reminder"
+          onPress={() => navigation.navigate('AddReminder')}
+          variant="secondary"
+        />
       </View>
 
       {/* Filter Section */}
@@ -314,6 +319,7 @@ export function MaintenanceListScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   headerActions: {
     marginBottom: 16,
+    gap: 10,
   },
   filterSection: {
     position: 'relative',
