@@ -2,7 +2,7 @@
   "expo": {
     "name": "Car Smart",
     "slug": "carsmart",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/android-icon.png",
     "userInterfaceStyle": "light",
@@ -35,6 +35,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon.png",
+          "color": "#1f6feb"
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "5d487116-d3bb-42b0-86c8-e60f04a87ff4"

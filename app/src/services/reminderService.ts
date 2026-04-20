@@ -12,6 +12,10 @@ import {
 } from 'firebase/firestore';
 
 import { firestore } from '../config/firebase';
+import {
+  cancelReminderNotifications,
+  syncReminderNotification,
+} from './notificationService';
 import { reminderSchema } from '../schemas';
 import type { Reminder } from '../types/models';
 
@@ -174,7 +178,15 @@ export async function createReminder(input: ReminderCreateInput): Promise<Remind
 
   const docRef = await addDoc(collection(firestore, 'reminders'), docData);
 
-  return getReminderById(docRef.id);
+  const createdReminder = await getReminderById(docRef.id);
+
+  try {
+    await syncReminderNotification(createdReminder);
+  } catch (error) {
+    console.warn('Unable to schedule reminder notification', error);
+  }
+
+  return createdReminder;
 }
 
 export async function updateReminder(
@@ -215,7 +227,15 @@ export async function updateReminder(
 
   await updateDoc(reminderRef, updateData);
 
-  return getReminderById(reminderId);
+  const updatedReminder = await getReminderById(reminderId);
+
+  try {
+    await syncReminderNotification(updatedReminder);
+  } catch (error) {
+    console.warn('Unable to sync reminder notification', error);
+  }
+
+  return updatedReminder;
 }
 
 export async function completeReminder(reminderId: string, userId: string): Promise<Reminder> {
@@ -251,6 +271,12 @@ export async function deleteReminder(reminderId: string): Promise<void> {
 
   const reminderRef = doc(firestore, 'reminders', reminderId);
   await deleteDoc(reminderRef);
+
+  try {
+    await cancelReminderNotifications(reminderId);
+  } catch (error) {
+    console.warn('Unable to cancel reminder notification', error);
+  }
 }
 
 // Helper functions for reminder status

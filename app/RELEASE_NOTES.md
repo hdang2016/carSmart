@@ -1,5 +1,33 @@
 # CarSmart - Release Notes
 
+## Version 1.1.0 (Build Date: April 20, 2026)
+
+### Features
+
+#### Reminder Notifications (Phase 1)
+- Added local date-based notifications for active reminders.
+- Notifications are scheduled for 9:00 AM local time on reminder due dates.
+- Reminder scheduling now syncs automatically on create, update, snooze, complete, and delete actions.
+- Added startup reminder notification resync after sign-in to keep device schedules aligned with Firestore data.
+- Registration Renewal reminders are now prioritized in the reminder type list for faster access.
+
+#### Reminder Workflow
+- Added direct navigation entry from Maintenance screen to Add Reminder.
+- Wired Add Reminder screen into maintenance stack navigation.
+
+### Technical Improvements
+- Added `notificationService` for scheduling/canceling/resyncing local reminders.
+- Configured `expo-notifications` plugin in `app.json`.
+- Updated app semantic version to `1.1.0`.
+- Added release checklist documentation with explicit version/build increment rules.
+
+### Release Process Notes
+- App version incremented in:
+	- `app/app.json` (`expo.version`)
+	- `app/package.json` (`version`)
+- iOS build number increment remains automatic via EAS production profile.
+- See `app/RELEASE_CHECKLIST.md` for full release and TestFlight steps.
+
 ## Version 1.0.0 (Build Date: March 13, 2026)
 
 ### Features
