@@ -227,6 +227,7 @@ export function MaintenanceListScreen({ navigation }: Props) {
         </Text>
       ) : (
         <FlatList
+          style={styles.list}
           data={filteredAndSortedData}
           keyExtractor={(item) => item.id ?? `${item.vehicleId}-${item.createdAt.toISOString()}`}
           contentContainerStyle={styles.listContainer}
@@ -315,11 +316,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   filterSection: {
+    position: 'relative',
+    zIndex: 30,
     borderWidth: 1,
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
     gap: 10,
+    overflow: 'visible',
   },
   filterHeader: {
     flexDirection: 'row',
@@ -331,8 +335,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    zIndex: 31,
+    overflow: 'visible',
   },
   filterColumn: {
+    zIndex: 32,
     flex: 1,
     minWidth: 96,
   },
@@ -341,6 +348,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 4,
     paddingHorizontal: 12,
+  },
+  list: {
+    zIndex: 1,
   },
   clearButtonText: {
     fontSize: 12,
@@ -355,6 +365,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
+    zIndex: 0,
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,

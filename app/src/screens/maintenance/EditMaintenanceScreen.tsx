@@ -17,6 +17,7 @@ import {
   TextInput, 
   View 
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '../../components/Button';
 import { ScreenContainer } from '../../components/ScreenContainer';
@@ -61,10 +62,12 @@ export function EditMaintenanceScreen({ navigation, route }: Props) {
   const { maintenanceId } = route.params;
   const { userId } = useAuth();
   const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerMonth, setPickerMonth] = useState(new Date().getMonth());
   const [pickerYear, setPickerYear] = useState(new Date().getFullYear());
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const {
     control,
@@ -171,6 +174,24 @@ export function EditMaintenanceScreen({ navigation, route }: Props) {
     });
   }, [detailQuery.data, reset]);
 
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSubscription = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const updateMutation = useMutation({
     mutationFn: async (values: EditMaintenanceValues) => {
       if (!userId) {
@@ -231,10 +252,14 @@ export function EditMaintenanceScreen({ navigation, route }: Props) {
     <ScreenContainer title="Edit Maintenance" subtitle="Update maintenance record.">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 56 : 0}
         style={{ flex: 1 }}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(24, keyboardHeight - insets.bottom + 24) },
+          ]}
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
