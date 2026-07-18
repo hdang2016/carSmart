@@ -44,6 +44,7 @@ service cloud.firestore {
           'oilType',
           'tireSize',
           'currentMileage',
+          'notes',
           'mileageUpdatedAt',
           'isActive',
           'createdAt',
@@ -61,6 +62,7 @@ service cloud.firestore {
         && (!('oilType' in request.resource.data) || request.resource.data.oilType is string)
         && (!('tireSize' in request.resource.data) || request.resource.data.tireSize is string)
         && (!('currentMileage' in request.resource.data) || request.resource.data.currentMileage is number)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
         && (!('mileageUpdatedAt' in request.resource.data) || request.resource.data.mileageUpdatedAt is timestamp);
 
       allow update: if isOwner(resource.data.userId)
@@ -78,6 +80,7 @@ service cloud.firestore {
           'oilType',
           'tireSize',
           'currentMileage',
+          'notes',
           'mileageUpdatedAt',
           'isActive',
           'createdAt',
@@ -93,6 +96,7 @@ service cloud.firestore {
         && (!('oilType' in request.resource.data) || request.resource.data.oilType is string)
         && (!('tireSize' in request.resource.data) || request.resource.data.tireSize is string)
         && (!('currentMileage' in request.resource.data) || request.resource.data.currentMileage is number)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
         && (!('mileageUpdatedAt' in request.resource.data) || request.resource.data.mileageUpdatedAt is timestamp);
     }
 

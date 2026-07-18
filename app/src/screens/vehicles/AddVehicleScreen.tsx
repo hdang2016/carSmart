@@ -44,6 +44,7 @@ const vehicleFormSchema = z.object({
     .trim()
     .optional()
     .refine((value) => !value || !Number.isNaN(Number(value)), 'Mileage must be a number'),
+  notes: z.string().trim().optional(),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>;
@@ -89,6 +90,7 @@ export function AddVehicleScreen({ navigation }: Props) {
       oilType: '',
       tireSize: '',
       currentMileage: '',
+      notes: '',
     },
   });
 
@@ -109,6 +111,7 @@ export function AddVehicleScreen({ navigation }: Props) {
         oilType: values.oilType || undefined,
         tireSize: values.tireSize || undefined,
         currentMileage: values.currentMileage ? Number(values.currentMileage) : undefined,
+        notes: values.notes || undefined,
       });
     },
     onSuccess: () => {
@@ -272,6 +275,23 @@ export function AddVehicleScreen({ navigation }: Props) {
         />
         {errors.currentMileage ? <Text style={[styles.error, { color: colors.danger }]}>{errors.currentMileage.message}</Text> : null}
 
+        <Controller
+          control={control}
+          name="notes"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              placeholder="Notes (optional)"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.input, styles.notesInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+              value={value}
+              onChangeText={onChange}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+            />
+          )}
+        />
+
         {addVehicleMutation.isError ? (
           <Text style={[styles.error, { color: colors.danger }]}>
             {addVehicleMutation.error instanceof Error
@@ -311,6 +331,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+  },
+  notesInput: {
+    minHeight: 120,
+    paddingTop: 14,
   },
   error: {
     fontSize: 14,

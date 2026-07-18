@@ -279,6 +279,59 @@ export async function deleteReminder(reminderId: string): Promise<void> {
   }
 }
 
+export async function deleteRemindersByVehicle(vehicleId: string): Promise<number> {
+  if (!firestore) {
+    throw new Error('Firestore is not configured. Add Firebase env values first.');
+  }
+
+  const reminders = await listRemindersByVehicle(vehicleId);
+  
+  // Delete all reminders for this vehicle
+  await Promise.all(
+    reminders.map(async (reminder) => {
+      if (reminder.id) {
+        await deleteReminder(reminder.id);
+      }
+    })
+  );
+
+  return reminders.length;
+}
+
+export async function cleanupOrphanedReminders(userId: string): Promise<number> {
+  if (!firestore) {
+    throw new Error('Firestore is not configured. Add Firebase env values first.');
+  }
+
+  // Get all reminders for this user
+  const allReminders = await listRemindersByUser(userId);
+  
+  // Get all active vehicles for this user
+  const vehiclesQuery = query(
+    collection(firestore, 'vehicles'),
+    where('userId', '==', userId),
+    where('isActive', '==', true)
+  );
+  const vehiclesSnapshot = await getDocs(vehiclesQuery);
+  const activeVehicleIds = new Set(vehiclesSnapshot.docs.map(doc => doc.id));
+
+  // Find reminders that belong to archived or deleted vehicles
+  const orphanedReminders = allReminders.filter(
+    reminder => !activeVehicleIds.has(reminder.vehicleId)
+  );
+
+  // Delete orphaned reminders
+  await Promise.all(
+    orphanedReminders.map(async (reminder) => {
+      if (reminder.id) {
+        await deleteReminder(reminder.id);
+      }
+    })
+  );
+
+  return orphanedReminders.length;
+}
+
 // Helper functions for reminder status
 
 export function isReminderOverdue(reminder: Reminder, currentMileage?: number): boolean {

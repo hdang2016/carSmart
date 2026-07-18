@@ -11,6 +11,7 @@ import {
   deleteReminder,
   listActiveRemindersByUser,
   snoozeReminder,
+  cleanupOrphanedReminders,
 } from '../../services/reminderService';
 import { generateRemindersForExistingMaintenance } from '../../services/reminderMigration';
 import { listVehiclesByUser } from '../../services/vehicleService';
@@ -206,7 +207,27 @@ export function HomeScreen() {
       console.error('Generate reminders error:', error);
     },
   });
-
+  const cleanupMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('Not authenticated');
+      return cleanupOrphanedReminders(userId);
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['reminders', userId] });
+      if (count > 0) {
+        Alert.alert(
+          'Cleanup Complete',
+          `Removed ${count} orphaned reminder${count !== 1 ? 's' : ''} from archived vehicles.`,
+        );
+      } else {
+        Alert.alert('Cleanup Complete', 'No orphaned reminders found.');
+      }
+    },
+    onError: (error) => {
+      Alert.alert('Error', 'Failed to cleanup reminders. Please try again.');
+      console.error('Cleanup reminders error:', error);
+    },
+  });
   const toggleReminder = (reminderId: string) => {
     setExpandedReminders((prev) => {
       const next = new Set(prev);
@@ -360,6 +381,18 @@ export function HomeScreen() {
                 </View>
               );
             })}
+          </View>
+        )}
+
+        {/* Cleanup Button - Show when there are any reminders */}
+        {hasReminders && (
+          <View style={{ marginTop: 16, marginBottom: 16 }}>
+            <Button
+              title="Clean Up Orphaned Reminders"
+              onPress={() => cleanupMutation.mutate()}
+              loading={cleanupMutation.isPending}
+              variant="secondary"
+            />
           </View>
         )}
 

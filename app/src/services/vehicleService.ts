@@ -13,6 +13,7 @@ import {
 import { firestore } from '../config/firebase';
 import { vehicleSchema } from '../schemas';
 import type { Vehicle } from '../types/models';
+import { deleteRemindersByVehicle } from './reminderService';
 
 export function validateVehicleInput(input: unknown) {
   return vehicleSchema.parse(input);
@@ -29,6 +30,7 @@ type VehicleCreateInput = {
   oilType?: string;
   tireSize?: string;
   currentMileage?: number;
+  notes?: string;
 };
 
 type VehicleUpdateInput = {
@@ -41,6 +43,7 @@ type VehicleUpdateInput = {
   oilType?: string;
   tireSize?: string;
   currentMileage?: number;
+  notes?: string;
 };
 
 function toDate(value: unknown): Date {
@@ -69,6 +72,7 @@ function mapVehicleDoc(id: string, data: Record<string, unknown>): Vehicle {
     tireSize: typeof data.tireSize === 'string' ? data.tireSize : undefined,
     currentMileage:
       typeof data.currentMileage === 'number' ? data.currentMileage : undefined,
+    notes: typeof data.notes === 'string' ? data.notes : undefined,
     mileageUpdatedAt: data.mileageUpdatedAt ? toDate(data.mileageUpdatedAt) : undefined,
     isActive: data.isActive !== false,
     createdAt: toDate(data.createdAt),
@@ -178,6 +182,13 @@ export async function getVehicleById(vehicleId: string): Promise<Vehicle | null>
 export async function archiveVehicle(vehicleId: string): Promise<void> {
   if (!firestore) {
     throw new Error('Firestore is not configured. Add Firebase env values first.');
+  }
+
+  // Delete all reminders associated with this vehicle
+  try {
+    await deleteRemindersByVehicle(vehicleId);
+  } catch (error) {
+    console.warn('Unable to delete reminders for archived vehicle:', error);
   }
 
   const vehicleDoc = doc(firestore, 'vehicles', vehicleId);

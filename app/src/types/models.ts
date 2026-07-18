@@ -13,6 +13,7 @@ export interface Vehicle {
   oilType?: string;
   tireSize?: string;
   currentMileage?: number;
+  notes?: string;
   mileageUpdatedAt?: Date;
   isActive: boolean;
   createdAt: Date;

@@ -19,6 +19,7 @@ export const vehicleSchema = z.object({
   oilType: z.string().trim().optional(),
   tireSize: z.string().trim().optional(),
   currentMileage: nonNegativeNumber.optional(),
+  notes: z.string().trim().optional(),
   isActive: z.boolean().default(true),
   createdAt: dateSchema,
   updatedAt: dateSchema,

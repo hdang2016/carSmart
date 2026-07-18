@@ -10,7 +10,8 @@
     "build:ios:preview": "npx eas-cli build --platform ios --profile preview",
     "build:ios:production": "npx eas-cli build --platform ios --profile production",
     "build:android:preview": "npx eas-cli build --platform android --profile preview",
-    "build:android:production": "npx eas-cli build --platform android --profile production"
+    "build:android:production": "npx eas-cli build --platform android --profile production",
+    "cleanup:reminders": "node scripts/cleanupOrphanedReminders.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "dotenv": "^17.4.2",
     "typescript": "~5.9.2"
   },
   "private": true

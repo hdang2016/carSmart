@@ -84,6 +84,17 @@ export function VehicleDetailScreen({ navigation, route }: Props) {
                 {vehicleQuery.data.tireSize ?? 'Not set'}
               </Text>
             </View>
+            {vehicleQuery.data.notes ? (
+              <>
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                <View style={styles.notesSection}>
+                  <Text style={[styles.label, { color: colors.textMuted }]}>Notes:</Text>
+                  <Text style={[styles.notesText, { color: colors.text }]}>
+                    {vehicleQuery.data.notes}
+                  </Text>
+                </View>
+              </>
+            ) : null}
           </View>
 
           <View style={styles.actions}>
@@ -154,6 +165,13 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     flex: 1,
     textAlign: 'right',
+  },
+  notesSection: {
+    gap: 8,
+  },
+  notesText: {
+    fontSize: 15,
+    lineHeight: 22,
   },
   actions: {
     gap: 12,

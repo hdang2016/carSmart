@@ -43,6 +43,7 @@ const vehicleFormSchema = z.object({
     .trim()
     .optional()
     .refine((value) => !value || !Number.isNaN(Number(value)), 'Mileage must be a number'),
+  notes: z.string().trim().optional(),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>;
@@ -89,6 +90,7 @@ export function EditVehicleScreen({ navigation, route }: Props) {
       oilType: '',
       tireSize: '',
       currentMileage: '',
+      notes: '',
     },
   });
 
@@ -114,6 +116,7 @@ export function EditVehicleScreen({ navigation, route }: Props) {
       currentMileage: vehicleQuery.data.currentMileage
         ? String(vehicleQuery.data.currentMileage)
         : '',
+      notes: vehicleQuery.data.notes ?? '',
     });
   }, [reset, vehicleQuery.data]);
 
@@ -129,6 +132,7 @@ export function EditVehicleScreen({ navigation, route }: Props) {
         oilType: values.oilType || undefined,
         tireSize: values.tireSize || undefined,
         currentMileage: values.currentMileage ? Number(values.currentMileage) : undefined,
+        notes: values.notes || undefined,
       });
     },
     onSuccess: async () => {
@@ -315,6 +319,23 @@ export function EditVehicleScreen({ navigation, route }: Props) {
           )}
         />
 
+        <Controller
+          control={control}
+          name="notes"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              placeholder="Notes (optional)"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.input, styles.notesInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+              value={value}
+              onChangeText={onChange}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+            />
+          )}
+        />
+
         {updateMutation.isError ? (
           <Text style={[styles.error, { color: colors.danger }]}>
             {updateMutation.error instanceof Error
@@ -354,6 +375,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+  },
+  notesInput: {
+    minHeight: 120,
+    paddingTop: 14,
   },
   error: {
     fontSize: 14,
